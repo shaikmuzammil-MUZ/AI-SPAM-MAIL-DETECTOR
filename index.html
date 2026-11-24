@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Spam Mail Detector — Machine Learning and NLP-powered email threat intelligence. Analyze raw emails in real-time for phishing, brand impersonation, cold B2B outreach, affiliate spam, and deceptive threads.">
+  <title>AI Spam Mail Detector — Machine Learning Threat Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <span class="mark">AI SPAM DETECTOR</span>
+        <span class="tag">Machine Learning & NLP Threat Core</span>
+      </div>
+      <div class="case-no">AI MODEL v2.4 &nbsp;|&nbsp; <span class="rule-count">24 Threat & Spam Heuristics</span></div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== HERO / INTAKE ===== -->
+    <section class="hero wrap">
+      <div class="eyebrow">Neural Intelligence Active</div>
+      <h1>AI-Powered Email Spam & Fraud Detection.</h1>
+      <p class="lede">Every email contains linguistic signals and structural patterns. Our client-side Machine Learning model (Multinomial Naive Bayes + TF-IDF n-grams) works alongside 24 heuristic threat categories to detect subtle marketing spam, unsolicited cold outreach, and high-risk phishing in milliseconds.</p>
+
+      <div class="folder">
+        <div class="folder-tab">Exhibit A — Message Intake</div>
+        <div class="folder-inner">
+
+          <!-- Field label + char count -->
+          <div class="field-label">
+            <span>Paste raw email content (headers + body)</span>
+            <span id="charCount">0 characters</span>
+          </div>
+
+          <!-- Textarea with scanline -->
+          <div class="intake-frame">
+            <div class="scanline" id="scanline"></div>
+            <textarea id="emailInput" spellcheck="false"
+              placeholder="From: security@paypa1-verify.com&#10;Reply-To: harvest@scam.tk&#10;Subject: URGENT: Your account is limited&#10;&#10;Dear Customer,&#10;We detected unusual activity. Verify your account immediately or it will be closed within 24 hours...&#10;&#10;Click here: http://bit.ly/verify-now"></textarea>
+          </div>
+
+          <!-- Sample chips -->
+          <div class="samples">
+            <span class="samples-label">Test Samples:</span>
+            <!-- Fraud / Phishing Samples -->
+            <button class="chip chip-danger" data-sample="phish_bank"     id="chip-phish_bank">Bank Phishing</button>
+            <button class="chip chip-danger" data-sample="phish_paypal"   id="chip-phish_paypal">PayPal Spoof</button>
+            <button class="chip chip-warn"   data-sample="bec"            id="chip-bec">BEC / Wire Fraud</button>
+            <button class="chip chip-warn"   data-sample="lottery"        id="chip-lottery">Lottery Scam</button>
+            <button class="chip chip-warn"   data-sample="fake_shipping"  id="chip-fake_shipping">Fake Delivery</button>
+            <!-- Subtle Spam Samples -->
+            <button class="chip chip-spam"   data-sample="spam_cold_pitch" id="chip-spam_cold">Cold B2B Pitch</button>
+            <button class="chip chip-spam"   data-sample="spam_promo"      id="chip-spam_promo">Promo / Affiliate</button>
+            <button class="chip chip-spam"   data-sample="spam_job"        id="chip-spam_job">Work-from-Home Job</button>
+            <button class="chip chip-spam"   data-sample="spam_fake_thread" id="chip-spam_thread">Deceptive Re: Thread</button>
+            <button class="chip chip-spam"   data-sample="spam_survey"     id="chip-spam_survey">Survey / Gift Card</button>
+            <!-- Clean Control -->
+            <button class="chip chip-safe"   data-sample="legit"          id="chip-legit">Legitimate Email</button>
+            <button class="chip chip-clear"  data-sample="clear"          id="chip-clear">Clear</button>
+          </div>
+
+          <!-- Action row -->
+          <div class="actions">
+            <button class="btn-primary" id="analyzeBtn">Run AI Analysis</button>
+            <span class="scan-status" id="scanStatus"></span>
+          </div>
+
+          <!-- ===== RESULT PANEL ===== -->
+          <div class="result" id="result">
+
+            <!-- Verdict row: stamp + gauge + description -->
+            <div class="verdict-row">
+              <div class="stamp" id="stamp">—</div>
+
+              <!-- Risk gauge (SVG arc) -->
+              <div class="gauge-wrap" aria-label="Risk Score Gauge">
+                <svg class="gauge-svg" viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="gauge-track" cx="60" cy="60" r="54" />
+                  <circle class="gauge-fill"  cx="60" cy="60" r="54" id="gaugeFill"
+                    stroke-dasharray="339.29" stroke-dashoffset="339.29"
+                    transform="rotate(-90 60 60)" />
+                </svg>
+                <div class="gauge-label">
+                  <span class="num mono" id="scoreNum">0</span>
+                  <span class="cap">/ 10</span>
+                </div>
+              </div>
+
+              <div class="verdict-meta">
+                <div class="verdict-title">Ensemble Verdict</div>
+                <p class="verdict-desc" id="verdictDesc">Run analysis to see verdict.</p>
+                <!-- Dual score breakdown -->
+                <div class="score-breakdown">
+                  <div class="subscore-pill"><span class="subscore-label">Fraud Risk:</span> <span class="subscore-val" id="fraudSubscore">0/10</span></div>
+                  <div class="subscore-pill"><span class="subscore-label">Spam Score:</span> <span class="subscore-val" id="spamSubscore">0/10</span></div>
+                  <div class="subscore-pill"><span class="subscore-label">Category:</span> <span class="subscore-pill-tag" id="threatBadge">—</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== AI INFERENCE & EXPLAINABILITY (XAI) DASHBOARD ===== -->
+            <div class="panel-label">AI Neural Analysis & Token Salience (XAI)</div>
+            <div class="ai-dashboard">
+              <!-- AI Probability Card -->
+              <div class="ai-prob-card">
+                <div class="ai-card-title">Machine Learning Prediction</div>
+                <div class="ai-prob-display">
+                  <span class="ai-prob-number" id="aiProbVal">0%</span>
+                  <span class="ai-prob-label">AI Spam Probability</span>
+                </div>
+                <div class="ai-prob-track">
+                  <div class="ai-prob-fill" id="aiProbFill" style="width: 0%;"></div>
+                </div>
+                <div class="ai-telemetry">
+                  <span class="telemetry-pill">Latency: <strong id="aiLatency">0 ms</strong></span>
+                  <span class="telemetry-pill">Signals: <strong id="aiFeatures">0 features</strong></span>
+                  <span class="telemetry-pill">Model: <strong>NLP Naive Bayes + TF-IDF</strong></span>
+                </div>
+              </div>
+
+              <!-- Token Salience / Feature Impact Card -->
+              <div class="ai-salience-card">
+                <div class="ai-card-title">Token Salience & Feature Impact</div>
+                <p class="ai-salience-desc">Linguistic features with strongest learned weights pushing towards Spam (+) or Ham (-).</p>
+                <div class="token-salience-list" id="tokenSalience">
+                  <div class="token-empty">Run analysis to view neural token weights.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== SIMPLE & EASY-TO-UNDERSTAND AI EXPLANATION ===== -->
+            <div class="panel-label">
+              <span>Why Did AI Make This Decision? (Simple Explanation)</span>
+              <span class="mono" style="font-size:10px; color:var(--ink-faint);">Easy-to-Read Breakdown</span>
+            </div>
+            <div class="analysis-explanation-card" id="analysisExplanationCard">
+              <div class="explanation-header">
+                <span class="explanation-badge" id="explanationBadge">READY</span>
+                <h3 class="explanation-title" id="explanationTitle">How AI Analyzed This Email</h3>
+              </div>
+              <p class="explanation-summary" id="explanationSummary">Select any email or paste your own, then click "Run AI Analysis" to see a simple, clear explanation of why it was marked as Safe, Spam, or Phishing!</p>
+              
+              <div class="explanation-grid" id="explanationGrid">
+                <!-- Dynamically populated with 4 friendly cards -->
+              </div>
+
+              <div class="explanation-action-box" id="explanationActionBox">
+                <div class="action-icon" id="actionIcon">🛡️</div>
+                <div class="action-content">
+                  <div class="action-label">What You Should Do:</div>
+                  <div class="action-text" id="actionText">Paste an email and click "Run AI Analysis" to get clear advice on what to do next.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Header analysis panel -->
+            <div class="panel-label">Parsed Email Headers</div>
+
+            <div class="header-panel" id="headerPanel">
+              <div class="header-row">
+                <span class="header-key">From</span>
+                <span class="header-val" id="headerFrom">—</span>
+              </div>
+              <div class="header-row">
+                <span class="header-key">Reply-To</span>
+                <span class="header-val" id="headerReply">—</span>
+              </div>
+              <div class="header-row">
+                <span class="header-key">Subject</span>
+                <span class="header-val" id="headerSubj">—</span>
+              </div>
+            </div>
+
+            <!-- Heuristic Findings -->
+            <div class="panel-label">
+              Triggered Threat & Spam Indicators
+              <button class="copy-btn" id="copyBtn">Copy Report</button>
+            </div>
+            <ul class="findings" id="findings"></ul>
+
+            <!-- URL Inspector -->
+            <div class="panel-label">URL & Tracking Inspector</div>
+            <ul class="url-list" id="urlList"></ul>
+
+            <!-- Annotated exhibit -->
+            <div class="panel-label">Annotated Linguistic Exhibit</div>
+            <div class="annotated" id="annotated"></div>
+
+          </div><!-- /result -->
+        </div><!-- /folder-inner -->
+      </div><!-- /folder -->
+    </section>
+
+    <!-- ===== PIPELINE SECTION ===== -->
+    <section class="section wrap" id="pipeline">
+      <h2>How the AI detection engine works</h2>
+      <p class="sub">A hybrid architecture combining high-speed statistical Natural Language Processing with deep structural threat heuristics.</p>
+      <div class="pipeline">
+        <div class="step">
+          <div class="no mono">01</div>
+          <h3>NLP Preprocessing</h3>
+          <p>Text normalization, entity masking (currency, URLs, emails), and tokenization into salient unigrams and bigrams.</p>
+        </div>
+        <div class="step">
+          <div class="no mono">02</div>
+          <h3>Machine Learning</h3>
+          <p>A Multinomial Naive Bayes & TF-IDF model calculates Bayesian posterior log-odds across 250+ calibrated linguistic features.</p>
+        </div>
+        <div class="step">
+          <div class="no mono">03</div>
+          <h3>Explainable AI (XAI)</h3>
+          <p>Feature importance attribution maps top positive (spam) and negative (legitimate) tokens with their mathematical impact weights.</p>
+        </div>
+        <div class="step">
+          <div class="no mono">04</div>
+          <h3>Structural Heuristics</h3>
+          <p>24 inspection rules evaluate brand lookalikes, reply-to rerouting, affiliate parameters, and fake conversation threads.</p>
+        </div>
+        <div class="step">
+          <div class="no mono">05</div>
+          <h3>Ensemble Meta-Verdict</h3>
+          <p>Statistical ML probability is synthesized with structural risk to yield a definitive, highly calibrated classification.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MODEL BENCHMARK COMPARISON SECTION ===== -->
+    <section class="section wrap" id="benchmarks">
+      <h2>Empirical Model Comparison & Benchmark Results</h2>
+      <p class="sub">Trained and evaluated on the official Enron Email Spam/Ham dataset (33,716 raw &rarr; 29,012 cleaned after removing 4,653 duplicates to strictly prevent train/test data leakage). 40,000 TF-IDF features (Word 1&ndash;3 n-grams + Char 3&ndash;5 n-grams with sublinear TF). Evaluated on 5,803 unseen test samples.</p>
+
+      <div class="benchmark-table-wrap">
+        <table class="benchmark-table">
+          <thead>
+            <tr>
+              <th>Model Algorithm</th>
+              <th>5-Fold CV F1</th>
+              <th>Test Accuracy</th>
+              <th>Precision (Spam)</th>
+              <th>Recall (Spam)</th>
+              <th>F1-Score</th>
+              <th>Specificity (Ham Acc)</th>
+              <th>False Positives</th>
+              <th>ROC-AUC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="best-row">
+              <td><strong>Linear SVM (Calibrated)</strong> <span class="best-tag">Selected</span></td>
+              <td>0.9905 &plusmn; 0.0008</td>
+              <td><strong>99.35%</strong></td>
+              <td><strong>99.11%</strong></td>
+              <td>99.59%</td>
+              <td><strong>0.9935</strong></td>
+              <td><strong>99.10%</strong></td>
+              <td><strong>26 / 2,899 (0.90%)</strong></td>
+              <td><strong>0.9996</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Logistic Regression (Balanced)</strong></td>
+              <td>0.9897 &plusmn; 0.0011</td>
+              <td>99.28%</td>
+              <td>98.94%</td>
+              <td><strong>99.62%</strong></td>
+              <td>0.9928</td>
+              <td>98.93%</td>
+              <td>31 / 2,899 (1.07%)</td>
+              <td>0.9995</td>
+            </tr>
+            <tr>
+              <td><strong>Multinomial Naive Bayes</strong></td>
+              <td>0.9862 &plusmn; 0.0018</td>
+              <td>98.64%</td>
+              <td>98.26%</td>
+              <td>99.04%</td>
+              <td>0.9865</td>
+              <td>98.24%</td>
+              <td>51 / 2,899 (1.76%)</td>
+              <td>0.9987</td>
+            </tr>
+            <tr>
+              <td><strong>Complement Naive Bayes</strong></td>
+              <td>0.9862 &plusmn; 0.0018</td>
+              <td>98.64%</td>
+              <td>98.26%</td>
+              <td>99.04%</td>
+              <td>0.9865</td>
+              <td>98.24%</td>
+              <td>51 / 2,899 (1.76%)</td>
+              <td>0.9987</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 12.5px; color: var(--ink-faint); margin-top: -16px; font-family: 'IBM Plex Mono', monospace;">
+        * Why Linear SVM was selected: It minimizes False Positives (only 26 false positives out of 2,899 legitimate emails, achieving 99.10% Specificity), ensuring legitimate personal and business emails are never mistakenly flagged as spam.
+      </p>
+    </section>
+
+    <!-- ===== INDICATORS SECTION ===== -->
+    <section class="section wrap" id="indicators">
+      <h2>24 threat & spam categories</h2>
+      <p class="sub">Structured into critical security threats and subtle unsolicited commercial spam patterns.</p>
+
+      <h3 class="group-title">Critical Security & Fraud Vectors</h3>
+      <div class="indicators">
+        <div class="indicator sev-critical">
+          <div class="k">Brand Impersonation</div>
+          <p>Email references major brands (PayPal, Amazon, Apple, Microsoft) while originating from an unaligned third-party domain.</p>
+        </div>
+        <div class="indicator sev-critical">
+          <div class="k">Credential Phishing</div>
+          <p>Explicit requests for passwords, OTPs, PINs, or account verification — never legitimate over email.</p>
+        </div>
+        <div class="indicator sev-critical">
+          <div class="k">Business Email Compromise</div>
+          <p>Executive impersonation demanding urgent confidential wire transfers or gift card purchases under secrecy.</p>
+        </div>
+        <div class="indicator sev-critical">
+          <div class="k">Malware Delivery</div>
+          <p>Dangerous attachments (.exe, .ps1, .docm), macro activation instructions, or password-protected archives.</p>
+        </div>
+        <div class="indicator sev-critical">
+          <div class="k">Lookalike Domains</div>
+          <p>Character substitutions (paypa1, arnazon), deceptive hyphens, or typosquatted brand domains.</p>
+        </div>
+        <div class="indicator sev-high">
+          <div class="k">Suspicious Sender Domain</div>
+          <p>Free webmail services (Gmail, Yahoo) claiming official corporate authority, or registered on high-risk TLDs.</p>
+        </div>
+        <div class="indicator sev-high">
+          <div class="k">Security Urgency & Threats</div>
+          <p>High-pressure account suspension or compliance deadlines compelling hasty unverified actions.</p>
+        </div>
+        <div class="indicator sev-high">
+          <div class="k">Personal Data Harvesting</div>
+          <p>Requests for SSN, date of birth, passport, or full credit card coordinates under identity verification pretexts.</p>
+        </div>
+        <div class="indicator sev-high">
+          <div class="k">Financial Bait / Prize Scams</div>
+          <p>Lottery sweepstakes notifications, crypto doubling, or unclaimed inheritance lures.</p>
+        </div>
+        <div class="indicator sev-high">
+          <div class="k">Header Anomalies</div>
+          <p>Reply-To header routing responses to a different server than the sender, or display name masquerading.</p>
+        </div>
+        <div class="indicator sev-high">
+          <div class="k">Advance-Fee & Romance Fraud</div>
+          <p>Classic 419 schemes, dying widow stories, overseas fund transfers, or spiritual blessing hooks.</p>
+        </div>
+        <div class="indicator sev-medium">
+          <div class="k">Fake Invoice & Shipping</div>
+          <p>Fabricated courier delivery fees (DHL, FedEx, USPS) or fictitious invoice balances to trigger link clicks.</p>
+        </div>
+      </div>
+
+      <h3 class="group-title" style="margin-top: 40px;">Subtle Spam, Bulk Marketing & Outreach Manipulation</h3>
+      <div class="indicators">
+        <div class="indicator sev-spam">
+          <div class="k">Unsolicited B2B Cold Outreach</div>
+          <p>Unsolicited sales pitches, lead generation offers, SEO guest post requests, or "quick 15-minute call" solicitations.</p>
+        </div>
+        <div class="indicator sev-spam">
+          <div class="k">Promotional & Discount Lures</div>
+          <p>Mass marketing claims ("80% discount", "special promo code", "exclusive voucher") with embedded tracking links.</p>
+        </div>
+        <div class="indicator sev-spam">
+          <div class="k">Deceptive Subject Lines</div>
+          <p>Pretending an ongoing relationship with fake "Re:" or "Fwd:" prefixes on cold emails, and manipulative clickbait.</p>
+        </div>
+        <div class="indicator sev-spam">
+          <div class="k">Artificial Scarcity & FOMO</div>
+          <p>Fabricated scarcity triggers ("only 3 items left", "expires midnight", "doors closing") to rush recipient actions.</p>
+        </div>
+        <div class="indicator sev-spam">
+          <div class="k">Work-from-Home / Job Scams</div>
+          <p>Unrealistic data entry or part-time roles promising $300-$500/day with Telegram/WhatsApp recruitment contacts.</p>
+        </div>
+        <div class="indicator sev-spam">
+          <div class="k">Webinar & Survey Bait</div>
+          <p>Unsolicited masterclass registrations or short consumer surveys baiting users with free gift card rewards.</p>
+        </div>
+        <div class="indicator sev-spam">
+          <div class="k">Greymail & Opt-Out Evasion</div>
+          <p>Pseudo opt-out/unsubscribe notices sent via personal webmail accounts to evade corporate spam filters.</p>
+        </div>
+        <div class="indicator sev-spam">
+          <div class="k">Tracking & Affiliate URLs</div>
+          <p>Detection of affiliate attribution parameters (?ref=, ?aff=, utm_campaign) and bulk-email redirector hops.</p>
+        </div>
+        <div class="indicator sev-medium">
+          <div class="k">Structural Bulk Signals</div>
+          <p>Disproportionately high link density compared to message length, or blind distribution to "undisclosed-recipients".</p>
+        </div>
+        <div class="indicator sev-low">
+          <div class="k">Commercial Hype & Hyperbole</div>
+          <p>Exaggerated claims ("100% guaranteed results", "revolutionary secret system", "featured on Forbes").</p>
+        </div>
+        <div class="indicator sev-low">
+          <div class="k">Generic Salutations</div>
+          <p>Impersonal greetings ("Dear Valued Shopper", "Dear Friend") characteristic of mass bulk mailing.</p>
+        </div>
+        <div class="indicator sev-low">
+          <div class="k">Formatting Abuse</div>
+          <p>Aggressive block capitals, repeating exclamation marks, or stacked attention-seeking symbols.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="wrap">
+    <p>AI Spam Mail Detector operates entirely in the browser using client-side Machine Learning (Multinomial Naive Bayes + TF-IDF) and heuristic intelligence. No email content or personal data is transmitted to external servers. <span class="redact-bar"></span></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
